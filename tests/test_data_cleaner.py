@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas.testing as pdt
 import unittest
 
 from src.data_cleaner import DataCleaner
@@ -22,6 +23,55 @@ def make_sample_df() -> pd.DataFrame:
 class TestDataCleaner(unittest.TestCase):
     """Test suite for DataCleaner class."""
 
+    def test_example_trim_strings_with_pandas_testing(self):
+        """Ejemplo de test usando pandas.testing para comparar DataFrames completos.
+        
+        Este test demuestra cómo usar pandas.testing.assert_frame_equal() para comparar
+        DataFrames completos, lo cual es útil porque maneja correctamente los índices,
+        tipos de datos y valores NaN de Pandas.
+        """
+        df = pd.DataFrame({
+            "name": ["  Alice  ", "  Bob  ", "Carol"],
+            "age": [25, 30, 35]
+        })
+        cleaner = DataCleaner()
+        
+        result = cleaner.trim_strings(df, ["name"])
+        
+        # DataFrame esperado después de trim
+        expected = pd.DataFrame({
+            "name": ["Alice", "Bob", "Carol"],
+            "age": [25, 30, 35]
+        })
+        
+        # Usar pandas.testing.assert_frame_equal() para comparar DataFrames completos
+        # Esto maneja correctamente índices, tipos y estructura de Pandas
+        pdt.assert_frame_equal(result, expected)
+
+    def test_example_drop_invalid_rows_with_pandas_testing(self):
+        """Ejemplo de test usando pandas.testing para comparar Series.
+        
+        Este test demuestra cómo usar pandas.testing.assert_series_equal() para comparar
+        Series completas, útil cuando queremos verificar que una columna completa tiene
+        los valores esperados manteniendo los índices correctos.
+        """
+        df = pd.DataFrame({
+            "name": ["Alice", None, "Bob"],
+            "age": [25, 30, None],
+            "city": ["SCL", "LPZ", "SCL"]
+        })
+        cleaner = DataCleaner()
+        
+        result = cleaner.drop_invalid_rows(df, ["name"])
+        
+        # Verificar que la columna 'name' ya no tiene valores faltantes
+        # Los índices después de drop_invalid_rows son [0, 2] (se eliminó la fila 1)
+        expected_name_series = pd.Series(["Alice", "Bob"], index=[0, 2], name="name")
+        
+        # Usar pandas.testing.assert_series_equal() para comparar Series completas
+        # Esto verifica valores, índices y tipos correctamente
+        pdt.assert_series_equal(result["name"], expected_name_series, check_names=True)
+
     def test_drop_invalid_rows_removes_rows_with_missing_values(self):
         """Test que verifica que el método drop_invalid_rows elimina correctamente las filas
         que contienen valores faltantes (NaN o None) en las columnas especificadas.
@@ -29,8 +79,8 @@ class TestDataCleaner(unittest.TestCase):
         Escenario esperado:
         - Crear un DataFrame con valores faltantes usando make_sample_df()
         - Llamar a drop_invalid_rows con las columnas "name" y "age"
-        - Verificar que el DataFrame resultante no tiene valores faltantes en esas columnas
-        - Verificar que el DataFrame resultante tiene menos filas que el original
+        - Verificar que el DataFrame resultante no tiene valores faltantes en esas columnas (usar self.assertEqual para comparar .isna().sum() con 0 - comparación simple de enteros, unittest es suficiente)
+        - Verificar que el DataFrame resultante tiene menos filas que el original (usar self.assertLess con len() - comparación simple de enteros, unittest es suficiente)
         """
 
     def test_drop_invalid_rows_raises_keyerror_for_unknown_column(self):
@@ -51,9 +101,9 @@ class TestDataCleaner(unittest.TestCase):
         Escenario esperado:
         - Crear un DataFrame con espacios en blanco usando make_sample_df()
         - Llamar a trim_strings con la columna "name"
-        - Verificar que el DataFrame original no fue modificado (mantiene los espacios)
-        - Verificar que en el DataFrame resultante los valores de "name" no tienen espacios al inicio/final
-        - Verificar que las columnas no especificadas (ej: "city") permanecen sin cambios
+        - Verificar que el DataFrame original no fue modificado (mantiene los espacios) (usar self.assertEqual para comparar valores específicos como strings individuales - unittest es suficiente para strings)
+        - Verificar que en el DataFrame resultante los valores de "name" no tienen espacios al inicio/final (usar self.assertEqual para comparar valores específicos como strings individuales - unittest es suficiente)
+        - Verificar que las columnas no especificadas (ej: "city") permanecen sin cambios (si comparas Series completas, usar pandas.testing.assert_series_equal() ya que maneja mejor los índices y tipos de Pandas; si comparas valores individuales, self.assertEqual es suficiente)
         """
 
     def test_trim_strings_raises_typeerror_for_non_string_column(self):
@@ -74,8 +124,8 @@ class TestDataCleaner(unittest.TestCase):
         Escenario esperado:
         - Crear un DataFrame con valores extremos usando make_sample_df() (contiene edad=120)
         - Llamar a remove_outliers_iqr con la columna "age" y factor=1.5
-        - Verificar que el valor extremo (120) fue eliminado del resultado
-        - Verificar que al menos uno de los valores no extremos (25 o 35) permanece en el resultado
+        - Verificar que el valor extremo (120) fue eliminado del resultado (usar self.assertNotIn para verificar que 120 no está en los valores de la columna)
+        - Verificar que al menos uno de los valores no extremos (25 o 35) permanece en el resultado (usar self.assertIn para verificar que está presente)
         """
 
     def test_remove_outliers_iqr_raises_keyerror_for_missing_column(self):

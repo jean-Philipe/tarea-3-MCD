@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.testing as npt
 import unittest
 
 from src.statistics_utils import StatisticsUtils
@@ -7,6 +8,44 @@ from src.statistics_utils import StatisticsUtils
 class TestStatisticsUtils(unittest.TestCase):
     """Test suite for StatisticsUtils class."""
 
+    def test_example_moving_average_with_numpy_testing(self):
+        """Ejemplo de test usando numpy.testing para comparar arrays de NumPy.
+        
+        Este test demuestra cómo usar numpy.testing.assert_allclose() para comparar
+        arrays de NumPy con tolerancia para errores de punto flotante, lo cual es
+        esencial cuando trabajamos con operaciones numéricas.
+        """
+        utils = StatisticsUtils()
+        arr = [1.0, 2.0, 3.0, 4.0, 5.0]
+        result = utils.moving_average(arr, window=3)
+        
+        # Valores esperados para media móvil con window=3
+        expected = np.array([2.0, 3.0, 4.0])
+        
+        # Usar numpy.testing.assert_allclose() para comparar arrays de NumPy
+        # Esto maneja correctamente errores de punto flotante con tolerancia
+        npt.assert_allclose(result, expected, rtol=1e-7, atol=1e-7)
+
+    def test_example_min_max_scale_with_numpy_testing(self):
+        """Ejemplo de test usando numpy.testing para verificar transformaciones numéricas.
+        
+        Este test demuestra cómo usar numpy.testing.assert_allclose() para verificar
+        que una transformación numérica produce los resultados correctos en todo el array,
+        considerando errores de punto flotante en cálculos matemáticos.
+        """
+        utils = StatisticsUtils()
+        arr = [10.0, 20.0, 30.0, 40.0]
+        result = utils.min_max_scale(arr)
+        
+        # Valores esperados después de min-max scaling: (x - min) / (max - min)
+        # min=10, max=40, range=30
+        # [10->0.0, 20->0.333..., 30->0.666..., 40->1.0]
+        expected = np.array([0.0, 1/3, 2/3, 1.0])
+        
+        # Usar numpy.testing.assert_allclose() para comparar arrays numéricos
+        # La tolerancia relativa y absoluta permite errores pequeños de punto flotante
+        npt.assert_allclose(result, expected, rtol=1e-10, atol=1e-10)
+
     def test_moving_average_basic_case(self):
         """Test que verifica que el método moving_average calcula correctamente la media móvil
         de una secuencia numérica para un caso básico.
@@ -14,8 +53,8 @@ class TestStatisticsUtils(unittest.TestCase):
         Escenario esperado:
         - Crear una lista de números (ej: [1, 2, 3, 4])
         - Llamar a moving_average con window=2
-        - Verificar que el resultado es correcto (ej: [1.5, 2.5, 3.5] para el array dado)
-        - Verificar que el resultado tiene la forma (shape) esperada
+        - Verificar que el resultado es correcto (ej: [1.5, 2.5, 3.5] para el array dado) (usar numpy.testing.assert_allclose() para comparar arrays de NumPy - esto es mejor que unittest porque maneja la comparación de arrays numéricos con tolerancia para errores de punto flotante)
+        - Verificar que el resultado tiene la forma (shape) esperada (usar self.assertEqual para comparar tuplas de .shape - comparación simple, unittest es suficiente)
         """
 
     def test_moving_average_raises_for_invalid_window(self):
@@ -44,9 +83,9 @@ class TestStatisticsUtils(unittest.TestCase):
         
         Escenario esperado:
         - Crear una lista de números (ej: [10, 20, 30, 40])
-        - Llamar a zscore para obtener los z-scores
-        - Verificar que la media del resultado es aproximadamente 0
-        - Verificar que la desviación estándar del resultado es aproximadamente 1 (usar np.isclose o self.assertAlmostEqual)
+        - Llamar a zscore para obtener los z-scores (resultado es un array de NumPy)
+        - Verificar que la media del resultado es aproximadamente 0 (usar self.assertAlmostEqual para un solo valor numérico - unittest es suficiente)
+        - Verificar que la desviación estándar del resultado es aproximadamente 1 (usar self.assertAlmostEqual para un solo valor numérico - unittest es suficiente)
         """
 
     def test_zscore_raises_for_zero_std(self):
@@ -65,10 +104,10 @@ class TestStatisticsUtils(unittest.TestCase):
         
         Escenario esperado:
         - Crear una lista de números (ej: [2, 4, 6])
-        - Llamar a min_max_scale para obtener los valores escalados
-        - Verificar que el valor mínimo del resultado es 0.0
-        - Verificar que el valor máximo del resultado es 1.0
-        - Verificar que los valores transformados son correctos (ej: [0.0, 0.5, 1.0] para [2, 4, 6]) (usar np.allclose o self.assertEqual)
+        - Llamar a min_max_scale para obtener los valores escalados (resultado es un array de NumPy)
+        - Verificar que el valor mínimo del resultado es 0.0 (usar self.assertAlmostEqual para un solo valor numérico - unittest es suficiente)
+        - Verificar que el valor máximo del resultado es 1.0 (usar self.assertAlmostEqual para un solo valor numérico - unittest es suficiente)
+        - Verificar que los valores transformados son correctos (ej: [0.0, 0.5, 1.0] para [2, 4, 6]) (usar numpy.testing.assert_allclose() para comparar el array completo - esto es necesario para comparar arrays de NumPy con tolerancia para errores de punto flotante)
         """
 
     def test_min_max_scale_raises_for_constant_values(self):
