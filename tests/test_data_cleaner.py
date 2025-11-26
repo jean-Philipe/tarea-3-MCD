@@ -123,7 +123,7 @@ class TestDataCleaner(unittest.TestCase):
         
         Escenario esperado:
         - Crear un DataFrame con valores extremos usando make_sample_df() (contiene edad=120)
-        - Llamar a remove_outliers_iqr con la columna "age" y factor=1.5
+        - Llamar a remove_outliers_iqr con la columna "age" y factor=0.5
         - Verificar que el valor extremo (120) fue eliminado del resultado (usar self.assertNotIn para verificar que 120 no está en los valores de la columna)
         - Verificar que al menos uno de los valores no extremos (25 o 35) permanece en el resultado (usar self.assertIn para verificar que está presente)
         """
